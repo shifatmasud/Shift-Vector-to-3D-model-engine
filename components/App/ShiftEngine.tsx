@@ -22,6 +22,7 @@ const ShiftEngine = () => {
     svgData: null,
     extrusion: 10,
     bevelSegments: 2,
+    subdivisions: 0,
     color: '#3366FF',
     roughness: 0.2,
     metalness: 0.8,
@@ -33,6 +34,7 @@ const ShiftEngine = () => {
     isGridVisible: true,
     rotateX: 15,
     rotateY: 45,
+    scale: 1,
     isGlitchEnabled: false,
     isBloomEnabled: false,
     isPixelationEnabled: false,
@@ -44,6 +46,7 @@ const ShiftEngine = () => {
   const sliderValues = {
       extrusion: useMotionValue(state.extrusion),
       bevelSegments: useMotionValue(state.bevelSegments),
+      subdivisions: useMotionValue(state.subdivisions),
       roughness: useMotionValue(state.roughness),
       metalness: useMotionValue(state.metalness),
       transmission: useMotionValue(state.transmission),
@@ -51,6 +54,7 @@ const ShiftEngine = () => {
       thickness: useMotionValue(state.thickness),
       rotateX: useMotionValue(state.rotateX),
       rotateY: useMotionValue(state.rotateY),
+      scale: useMotionValue(state.scale),
   };
 
   const handlePropChange = (key: string, value: any) => {
@@ -81,9 +85,9 @@ const ShiftEngine = () => {
 
   // --- WINDOWS ---
   const [windows, setWindows] = useState<Record<WindowId, WindowState>>({
-    'shift-io': { id: 'shift-io', title: 'I/O', isOpen: true, zIndex: 3, x: -200, y: -250 },
-    'shift-config': { id: 'shift-config', title: 'Configuration', isOpen: false, zIndex: 2, x: 220, y: -250 },
-    'shift-effects': { id: 'shift-effects', title: 'Effects', isOpen: false, zIndex: 1, x: 220, y: 100 },
+    'shift-io': { id: 'shift-io', title: 'I/O', isOpen: true, zIndex: 3, x: 0, y: 0 },
+    'shift-config': { id: 'shift-config', title: 'Configuration', isOpen: false, zIndex: 2, x: 0, y: 0 },
+    'shift-effects': { id: 'shift-effects', title: 'Effects', isOpen: false, zIndex: 1, x: 0, y: 0 },
     // Keep unused ones for type safety
     control: { id: 'control', title: '', isOpen: false, zIndex: 0, x: 0, y: 0 },
     code: { id: 'code', title: '', isOpen: false, zIndex: 0, x: 0, y: 0 },

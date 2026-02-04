@@ -75,11 +75,13 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ state, onPropChange, s
             <label style={theme.Type.Readable.Label.S}>GEOMETRY</label>
             <RangeSlider label="Extrusion Depth" motionValue={sliderValues.extrusion} onCommit={() => {}} onChange={(v) => onPropChange('extrusion', v)} min={1} max={50} />
             <RangeSlider label="Bevel Segments" motionValue={sliderValues.bevelSegments} onCommit={() => {}} onChange={(v) => onPropChange('bevelSegments', v)} min={0} max={10} step={1} />
+            <RangeSlider label="Subdivisions" motionValue={sliderValues.subdivisions} onCommit={() => {}} onChange={(v) => onPropChange('subdivisions', v)} min={0} max={3} step={1} />
             
             <div style={{ borderTop: `1px solid ${theme.Color.Base.Surface[3]}` }} />
             <label style={theme.Type.Readable.Label.S}>TRANSFORM</label>
             <RangeSlider label="Rotate X" motionValue={sliderValues.rotateX} onCommit={() => {}} onChange={(v) => onPropChange('rotateX', v)} min={-180} max={180} step={1} />
             <RangeSlider label="Rotate Y" motionValue={sliderValues.rotateY} onCommit={() => {}} onChange={(v) => onPropChange('rotateY', v)} min={-180} max={180} step={1} />
+            <RangeSlider label="Scale" motionValue={sliderValues.scale} onCommit={() => {}} onChange={(v) => onPropChange('scale', v)} min={0.1} max={5} step={0.01} />
             
             <div style={{ borderTop: `1px solid ${theme.Color.Base.Surface[3]}` }} />
             <label style={theme.Type.Readable.Label.S}>MATERIAL PRESETS</label>

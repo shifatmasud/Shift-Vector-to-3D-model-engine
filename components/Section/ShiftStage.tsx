@@ -11,6 +11,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { LoopSubdivision } from 'three/addons/modifiers/LoopSubdivision.js';
 import { ShiftState } from '../../types/index.tsx';
 
 // --- SHADERS ---
@@ -19,11 +20,12 @@ const PixelationShader = { uniforms: { 'tDiffuse': { value: null }, 'pixelSize':
 const ScanLineShader = { uniforms: { 'tDiffuse': { value: null } }, vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }`, fragmentShader: `uniform sampler2D tDiffuse; varying vec2 vUv; void main() { vec4 originalColor = texture2D(tDiffuse, vUv); float lineFactor = 400.0; float intensity = sin(vUv.y * lineFactor); vec3 scanLineColor = originalColor.rgb * (1.0 - 0.15 * pow(intensity, 2.0)); gl_FragColor = vec4(scanLineColor, originalColor.a); }` };
 
 // --- HELPERS ---
-const createModelFromSVG = (svgString: string, extrusionDepth: number, bevelSegments: number, color: string): THREE.Group => {
+const createModelFromSVG = (svgString: string, extrusionDepth: number, bevelSegments: number, subdivisions: number, color: string): THREE.Group => {
   const loader = new SVGLoader();
   const data = loader.parse(svgString);
   const group = new THREE.Group();
   const extrudeSettings = { depth: extrusionDepth, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.5, bevelSegments };
+  const subdivisionModifier = new LoopSubdivision();
 
   data.paths.forEach((path) => {
     const fillColor = path.userData?.style?.fill;
@@ -32,12 +34,14 @@ const createModelFromSVG = (svgString: string, extrusionDepth: number, bevelSegm
         color: new THREE.Color(initialColor),
         side: THREE.DoubleSide
     });
-    // morphTargets is true by default or handled automatically in newer Three.js versions for BufferGeometry with morphAttributes
     
     if (path.userData?.style?.fill !== 'none') {
       const shapes = SVGLoader.createShapes(path);
       shapes.forEach((shape) => {
-        const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+        let geometry: THREE.BufferGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+        if (subdivisions > 0) {
+            geometry = subdivisionModifier.modify(geometry, subdivisions);
+        }
         const mesh = new THREE.Mesh(geometry, material);
         group.add(mesh);
       });
@@ -189,7 +193,7 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
         }
 
         if (state.svgData) {
-            const model = createModelFromSVG(state.svgData, state.extrusion, state.bevelSegments, state.color);
+            const model = createModelFromSVG(state.svgData, state.extrusion, state.bevelSegments, state.subdivisions, state.color);
             modelRef.current = model;
             modelWrapper.add(model);
 
@@ -204,7 +208,7 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
         } else {
             modelRef.current = null;
         }
-    }, [state.svgData, state.extrusion, state.bevelSegments]);
+    }, [state.svgData, state.extrusion, state.bevelSegments, state.subdivisions]);
 
     // --- UPDATE MATERIAL ---
     useEffect(() => {
@@ -245,10 +249,11 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
         if (sceneRef.current) sceneRef.current.background = new THREE.Color(state.backgroundColor);
         if (gridHelperRef.current) gridHelperRef.current.visible = state.isGridVisible;
 
-        // Rotation
+        // Transforms
         if (modelWrapperRef.current) {
             modelWrapperRef.current.rotation.x = THREE.MathUtils.degToRad(state.rotateX);
             modelWrapperRef.current.rotation.y = THREE.MathUtils.degToRad(state.rotateY);
+            modelWrapperRef.current.scale.set(state.scale, state.scale, state.scale);
         }
 
         // Post Processing toggles
@@ -265,7 +270,7 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
             }
         }
 
-    }, [state.lightingPreset, state.backgroundColor, state.isGridVisible, state.rotateX, state.rotateY, state.isBloomEnabled, state.isPixelationEnabled, state.isScanLinesEnabled, state.isGlitchEnabled, state.isChromaticAberrationEnabled]);
+    }, [state.lightingPreset, state.backgroundColor, state.isGridVisible, state.rotateX, state.rotateY, state.scale, state.isBloomEnabled, state.isPixelationEnabled, state.isScanLinesEnabled, state.isGlitchEnabled, state.isChromaticAberrationEnabled]);
 
     return (
         <div ref={mountRef} style={{ width: '100%', height: '100%', cursor: 'grab' }} onPointerDown={(e) => (e.target as HTMLDivElement).style.cursor = 'grabbing'} onPointerUp={(e) => (e.target as HTMLDivElement).style.cursor = 'grab'} />

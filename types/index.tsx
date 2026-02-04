@@ -46,6 +46,7 @@ export interface ShiftState {
   svgData: string | null;
   extrusion: number;
   bevelSegments: number;
+  subdivisions: number;
   
   // Material
   color: string;
@@ -61,6 +62,7 @@ export interface ShiftState {
   isGridVisible: boolean;
   rotateX: number;
   rotateY: number;
+  scale: number;
   
   // Effects
   isGlitchEnabled: boolean;
