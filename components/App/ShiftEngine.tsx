@@ -99,7 +99,8 @@ const ShiftEngine = () => {
       const isOpen = !prev[id].isOpen;
       const next = { ...prev, [id]: { ...prev[id], isOpen } };
       if (isOpen) {
-        const maxZ = Math.max(...Object.values(prev).map(w => w.zIndex));
+        // FIX: Explicitly type `w` as WindowState to help type inference.
+        const maxZ = Math.max(...Object.values(prev).map((w: WindowState) => w.zIndex));
         next[id].zIndex = maxZ + 1;
       }
       return next;
@@ -108,7 +109,8 @@ const ShiftEngine = () => {
 
   const bringToFront = (id: WindowId) => {
     setWindows(prev => {
-      const maxZ = Math.max(...Object.values(prev).map(w => w.zIndex));
+      // FIX: Explicitly type `w` as WindowState to help type inference.
+      const maxZ = Math.max(...Object.values(prev).map((w: WindowState) => w.zIndex));
       if (prev[id].zIndex === maxZ) return prev;
       return { ...prev, [id]: { ...prev[id], zIndex: maxZ + 1 } };
     });

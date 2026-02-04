@@ -4,14 +4,14 @@
  */
 import React, { useRef, useEffect, useImperativeHandle, forwardRef, useState } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
-import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-import { LoopSubdivision } from 'three/addons/modifiers/LoopSubdivision.js';
+import { OrbitControls } from 'https://esm.sh/three@0.180.0/examples/jsm/controls/OrbitControls.js';
+import { SVGLoader } from 'https://esm.sh/three@0.180.0/examples/jsm/loaders/SVGLoader.js';
+import { GLTFExporter } from 'https://esm.sh/three@0.180.0/examples/jsm/exporters/GLTFExporter.js';
+import { EffectComposer } from 'https://esm.sh/three@0.180.0/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'https://esm.sh/three@0.180.0/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'https://esm.sh/three@0.180.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'https://esm.sh/three@0.180.0/examples/jsm/postprocessing/ShaderPass.js';
+import { LoopSubdivision } from 'https://esm.sh/three@0.180.0/examples/jsm/modifiers/LoopSubdivision.js';
 import { ShiftState } from '../../types/index.tsx';
 
 // --- SHADERS ---
