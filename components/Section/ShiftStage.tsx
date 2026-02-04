@@ -5,7 +5,7 @@
 import React, { useRef, useEffect, useImperativeHandle, forwardRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+import { SVGLoader, SVGResultPaths } from 'three/addons/loaders/SVGLoader.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -25,20 +25,27 @@ const createModelFromSVG = (svgString: string, extrusionDepth: number, bevelSegm
   const group = new THREE.Group();
   const extrudeSettings = { depth: extrusionDepth, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.5, bevelSegments };
 
-  data.paths.forEach((path) => {
+  data.paths.forEach((path: SVGResultPaths) => {
     const fillColor = path.userData?.style?.fill;
-    const initialColor = (fillColor && fillColor !== 'none') ? fillColor : color;
+    let initialColor = (fillColor && fillColor !== 'none') ? fillColor : color;
+    
+    // Fix: Handle SVGs that use "currentColor"
+    if (initialColor === 'currentColor') {
+        initialColor = color;
+    }
+
     const material = new THREE.MeshPhysicalMaterial({
         color: new THREE.Color(initialColor),
         side: THREE.DoubleSide
     });
-    // morphTargets is true by default or handled automatically in newer Three.js versions for BufferGeometry with morphAttributes
     
     if (path.userData?.style?.fill !== 'none') {
       const shapes = SVGLoader.createShapes(path);
       shapes.forEach((shape) => {
         const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
         const mesh = new THREE.Mesh(geometry, material);
+        // Store the original 2D shape on the mesh for real-time updates
+        mesh.userData.shape = shape; 
         group.add(mesh);
       });
     }
@@ -175,7 +182,7 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Run once on mount
 
-    // --- UPDATE GEOMETRY (When SVG Data changes) ---
+    // --- CREATE/REPLACE MODEL (When SVG Data changes) ---
     useEffect(() => {
         const camera = cameraRef.current;
         const modelWrapper = modelWrapperRef.current;
@@ -204,7 +211,30 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
         } else {
             modelRef.current = null;
         }
-    }, [state.svgData, state.extrusion, state.bevelSegments]);
+    }, [state.svgData]);
+    
+    // --- REALTIME GEOMETRY UPDATE (For sliders) ---
+    useEffect(() => {
+        if (!modelRef.current || !state.svgData) return;
+
+        modelRef.current.traverse((object) => {
+            if (object instanceof THREE.Mesh && object.userData.shape) {
+                const extrudeSettings = {
+                    depth: state.extrusion,
+                    bevelEnabled: true,
+                    bevelThickness: 0.5,
+                    bevelSize: 0.5,
+                    bevelSegments: state.bevelSegments,
+                };
+                
+                const newGeometry = new THREE.ExtrudeGeometry(object.userData.shape, extrudeSettings);
+                object.geometry.dispose(); // IMPORTANT: free memory
+                object.geometry = newGeometry;
+            }
+        });
+
+    }, [state.extrusion, state.bevelSegments]);
+
 
     // --- UPDATE MATERIAL ---
     useEffect(() => {
@@ -221,7 +251,7 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
                 material.transparent = state.transmission > 0;
             }
         });
-    }, [state.color, state.roughness, state.metalness, state.transmission, state.ior, state.thickness, state.svgData]);
+    }, [state.color, state.roughness, state.metalness, state.transmission, state.ior, state.thickness]);
 
     // --- UPDATE SCENE & EFFECTS ---
     useEffect(() => {
