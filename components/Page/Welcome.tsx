@@ -2,11 +2,10 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import React from 'react';
-import MetaPrototype from '../App/MetaPrototype.tsx';
 
+// This component is no longer used. The main App/Shift.tsx is now the entry point.
 const Welcome = () => {
-  return <MetaPrototype />;
+  return null;
 };
 
 export default Welcome;
