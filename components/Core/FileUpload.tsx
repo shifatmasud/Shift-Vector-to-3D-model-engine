@@ -57,7 +57,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoad, disabled }) => {
       style={{
         width: '100%',
         minHeight: '180px',
-        border: `2px dashed ${isDragging ? theme.Color.Accent.Content[1] : theme.Color.Base.Surface[3]}`,
+        border: `2px dashed ${isDragging ? theme.Color.Signal.Content[1] : theme.Color.Base.Surface[3]}`,
         borderRadius: theme.radius['Radius.L'],
         backgroundColor: isDragging ? theme.Color.Base.Surface[3] : theme.Color.Base.Surface[2],
         display: 'flex',
@@ -72,9 +72,9 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileLoad, disabled }) => {
       }}
       animate={{ scale: isDragging ? 1.02 : 1 }}
     >
-        <i className="ph-duotone ph-upload-simple" style={{ fontSize: '48px', color: disabled ? theme.Color.Base.Content[3] : theme.Color.Accent.Content[1], marginBottom: theme.spacing['Space.M'] }} />
+        <i className="ph-fill ph-upload-simple" style={{ fontSize: '48px', color: disabled ? theme.Color.Base.Content[3] : theme.Color.Signal.Content[1], marginBottom: theme.spacing['Space.M'] }} />
         
-        <p style={{ ...theme.Type.Readable.Body.M, color: theme.Color.Base.Content[1], fontWeight: 600 }}>
+        <p style={{ ...theme.Type.Readable.Body.M, color: theme.Color.Signal.Content[1], fontWeight: 600 }}>
             {disabled ? 'Processing...' : 'Upload SVG'}
         </p>
         <p style={{ ...theme.Type.Readable.Body.S, color: theme.Color.Base.Content[2], marginTop: theme.spacing['Space.XS'], textAlign: 'center' }}>

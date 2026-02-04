@@ -4,14 +4,13 @@
  */
 import React, { useRef, useEffect, useImperativeHandle, forwardRef, useState } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'https://esm.sh/three@0.180.0/examples/jsm/controls/OrbitControls.js';
-import { SVGLoader } from 'https://esm.sh/three@0.180.0/examples/jsm/loaders/SVGLoader.js';
-import { GLTFExporter } from 'https://esm.sh/three@0.180.0/examples/jsm/exporters/GLTFExporter.js';
-import { EffectComposer } from 'https://esm.sh/three@0.180.0/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'https://esm.sh/three@0.180.0/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'https://esm.sh/three@0.180.0/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { ShaderPass } from 'https://esm.sh/three@0.180.0/examples/jsm/postprocessing/ShaderPass.js';
-import { LoopSubdivision } from 'https://esm.sh/three@0.180.0/examples/jsm/modifiers/LoopSubdivision.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { ShiftState } from '../../types/index.tsx';
 
 // --- SHADERS ---
@@ -20,12 +19,11 @@ const PixelationShader = { uniforms: { 'tDiffuse': { value: null }, 'pixelSize':
 const ScanLineShader = { uniforms: { 'tDiffuse': { value: null } }, vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }`, fragmentShader: `uniform sampler2D tDiffuse; varying vec2 vUv; void main() { vec4 originalColor = texture2D(tDiffuse, vUv); float lineFactor = 400.0; float intensity = sin(vUv.y * lineFactor); vec3 scanLineColor = originalColor.rgb * (1.0 - 0.15 * pow(intensity, 2.0)); gl_FragColor = vec4(scanLineColor, originalColor.a); }` };
 
 // --- HELPERS ---
-const createModelFromSVG = (svgString: string, extrusionDepth: number, bevelSegments: number, subdivisions: number, color: string): THREE.Group => {
+const createModelFromSVG = (svgString: string, extrusionDepth: number, bevelSegments: number, color: string): THREE.Group => {
   const loader = new SVGLoader();
   const data = loader.parse(svgString);
   const group = new THREE.Group();
   const extrudeSettings = { depth: extrusionDepth, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.5, bevelSegments };
-  const subdivisionModifier = new LoopSubdivision();
 
   data.paths.forEach((path) => {
     const fillColor = path.userData?.style?.fill;
@@ -34,14 +32,12 @@ const createModelFromSVG = (svgString: string, extrusionDepth: number, bevelSegm
         color: new THREE.Color(initialColor),
         side: THREE.DoubleSide
     });
+    // morphTargets is true by default or handled automatically in newer Three.js versions for BufferGeometry with morphAttributes
     
     if (path.userData?.style?.fill !== 'none') {
       const shapes = SVGLoader.createShapes(path);
       shapes.forEach((shape) => {
-        let geometry: THREE.BufferGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-        if (subdivisions > 0) {
-            geometry = subdivisionModifier.modify(geometry, subdivisions);
-        }
+        const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
         const mesh = new THREE.Mesh(geometry, material);
         group.add(mesh);
       });
@@ -193,7 +189,7 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
         }
 
         if (state.svgData) {
-            const model = createModelFromSVG(state.svgData, state.extrusion, state.bevelSegments, state.subdivisions, state.color);
+            const model = createModelFromSVG(state.svgData, state.extrusion, state.bevelSegments, state.color);
             modelRef.current = model;
             modelWrapper.add(model);
 
@@ -208,7 +204,7 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
         } else {
             modelRef.current = null;
         }
-    }, [state.svgData, state.extrusion, state.bevelSegments, state.subdivisions]);
+    }, [state.svgData, state.extrusion, state.bevelSegments]);
 
     // --- UPDATE MATERIAL ---
     useEffect(() => {

@@ -46,7 +46,6 @@ export interface ShiftState {
   svgData: string | null;
   extrusion: number;
   bevelSegments: number;
-  subdivisions: number;
   
   // Material
   color: string;

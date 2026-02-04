@@ -75,7 +75,6 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ state, onPropChange, s
             <label style={theme.Type.Readable.Label.S}>GEOMETRY</label>
             <RangeSlider label="Extrusion Depth" motionValue={sliderValues.extrusion} onCommit={() => {}} onChange={(v) => onPropChange('extrusion', v)} min={1} max={50} />
             <RangeSlider label="Bevel Segments" motionValue={sliderValues.bevelSegments} onCommit={() => {}} onChange={(v) => onPropChange('bevelSegments', v)} min={0} max={10} step={1} />
-            <RangeSlider label="Subdivisions" motionValue={sliderValues.subdivisions} onCommit={() => {}} onChange={(v) => onPropChange('subdivisions', v)} min={0} max={3} step={1} />
             
             <div style={{ borderTop: `1px solid ${theme.Color.Base.Surface[3]}` }} />
             <label style={theme.Type.Readable.Label.S}>TRANSFORM</label>

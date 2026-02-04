@@ -22,7 +22,6 @@ const ShiftEngine = () => {
     svgData: null,
     extrusion: 10,
     bevelSegments: 2,
-    subdivisions: 0,
     color: '#3366FF',
     roughness: 0.2,
     metalness: 0.8,
@@ -46,7 +45,6 @@ const ShiftEngine = () => {
   const sliderValues = {
       extrusion: useMotionValue(state.extrusion),
       bevelSegments: useMotionValue(state.bevelSegments),
-      subdivisions: useMotionValue(state.subdivisions),
       roughness: useMotionValue(state.roughness),
       metalness: useMotionValue(state.metalness),
       transmission: useMotionValue(state.transmission),
@@ -85,9 +83,9 @@ const ShiftEngine = () => {
 
   // --- WINDOWS ---
   const [windows, setWindows] = useState<Record<WindowId, WindowState>>({
-    'shift-io': { id: 'shift-io', title: 'I/O', isOpen: true, zIndex: 3, x: 0, y: 0 },
-    'shift-config': { id: 'shift-config', title: 'Configuration', isOpen: false, zIndex: 2, x: 0, y: 0 },
-    'shift-effects': { id: 'shift-effects', title: 'Effects', isOpen: false, zIndex: 1, x: 0, y: 0 },
+    'shift-io': { id: 'shift-io', title: 'I/O', isOpen: true, zIndex: 3, x: -200, y: -250 },
+    'shift-config': { id: 'shift-config', title: 'Configuration', isOpen: false, zIndex: 2, x: -200, y: -250 },
+    'shift-effects': { id: 'shift-effects', title: 'Effects', isOpen: false, zIndex: 1, x: -200, y: -250 },
     // Keep unused ones for type safety
     control: { id: 'control', title: '', isOpen: false, zIndex: 0, x: 0, y: 0 },
     code: { id: 'code', title: '', isOpen: false, zIndex: 0, x: 0, y: 0 },
@@ -99,8 +97,8 @@ const ShiftEngine = () => {
       const isOpen = !prev[id].isOpen;
       const next = { ...prev, [id]: { ...prev[id], isOpen } };
       if (isOpen) {
-        // FIX: Explicitly type `w` as WindowState to help type inference.
-        const maxZ = Math.max(...Object.values(prev).map((w: WindowState) => w.zIndex));
+        // Fix: Cast `w` to `WindowState` to resolve `zIndex` property.
+        const maxZ = Math.max(...Object.values(prev).map(w => (w as WindowState).zIndex));
         next[id].zIndex = maxZ + 1;
       }
       return next;
@@ -109,8 +107,8 @@ const ShiftEngine = () => {
 
   const bringToFront = (id: WindowId) => {
     setWindows(prev => {
-      // FIX: Explicitly type `w` as WindowState to help type inference.
-      const maxZ = Math.max(...Object.values(prev).map((w: WindowState) => w.zIndex));
+      // Fix: Cast `w` to `WindowState` to resolve `zIndex` property.
+      const maxZ = Math.max(...Object.values(prev).map(w => (w as WindowState).zIndex));
       if (prev[id].zIndex === maxZ) return prev;
       return { ...prev, [id]: { ...prev[id], zIndex: maxZ + 1 } };
     });

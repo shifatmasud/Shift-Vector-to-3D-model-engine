@@ -78,7 +78,7 @@ const MetaPrototype = () => {
 
   // --- Window Management ---
   const WINDOW_WIDTH = 400;
-  const CONTROL_PANEL_HEIGHT = 640; // Increased height for new 3D controls
+  const CONTROL_PANEL_HEIGHT = 600; // Capped at window max height
   const CODE_PANEL_HEIGHT = 408;
   const CONSOLE_PANEL_HEIGHT = 200; // Increased slightly for better visibility
 
