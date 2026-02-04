@@ -26,6 +26,11 @@ interface IOPanelProps extends PanelProps {
   isLoading: boolean;
 }
 
+interface ConfigPanelProps extends PanelProps {
+    onPresetChange: (preset: 'matte' | 'plastic' | 'metal' | 'glass') => void;
+}
+
+
 // --- IO PANEL ---
 export const IOPanel: React.FC<IOPanelProps> = ({ state, onPropChange, onExport, onClear, isLoading }) => {
     const { theme } = useTheme();
@@ -63,7 +68,7 @@ export const IOPanel: React.FC<IOPanelProps> = ({ state, onPropChange, onExport,
 };
 
 // --- CONFIG PANEL ---
-export const ConfigPanel: React.FC<PanelProps> = ({ state, onPropChange, sliderValues }) => {
+export const ConfigPanel: React.FC<ConfigPanelProps> = ({ state, onPropChange, sliderValues, onPresetChange }) => {
     const { theme } = useTheme();
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing['Space.L'] }}>
@@ -72,8 +77,21 @@ export const ConfigPanel: React.FC<PanelProps> = ({ state, onPropChange, sliderV
             <RangeSlider label="Bevel Segments" motionValue={sliderValues.bevelSegments} onCommit={() => {}} onChange={(v) => onPropChange('bevelSegments', v)} min={0} max={10} step={1} />
             
             <div style={{ borderTop: `1px solid ${theme.Color.Base.Surface[3]}` }} />
+            <label style={theme.Type.Readable.Label.S}>TRANSFORM</label>
+            <RangeSlider label="Rotate X" motionValue={sliderValues.rotateX} onCommit={() => {}} onChange={(v) => onPropChange('rotateX', v)} min={-180} max={180} step={1} />
+            <RangeSlider label="Rotate Y" motionValue={sliderValues.rotateY} onCommit={() => {}} onChange={(v) => onPropChange('rotateY', v)} min={-180} max={180} step={1} />
             
-            <label style={theme.Type.Readable.Label.S}>MATERIAL</label>
+            <div style={{ borderTop: `1px solid ${theme.Color.Base.Surface[3]}` }} />
+            <label style={theme.Type.Readable.Label.S}>MATERIAL PRESETS</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing['Space.S'] }}>
+                <Button label="Matte" variant="secondary" onClick={() => onPresetChange('matte')} size="S" />
+                <Button label="Glossy" variant="secondary" onClick={() => onPresetChange('plastic')} size="S" />
+                <Button label="Metal" variant="secondary" onClick={() => onPresetChange('metal')} size="S" />
+                <Button label="Glass" variant="secondary" onClick={() => onPresetChange('glass')} size="S" />
+            </div>
+
+            <div style={{ borderTop: `1px solid ${theme.Color.Base.Surface[3]}` }} />
+            <label style={theme.Type.Readable.Label.S}>MATERIAL PROPERTIES</label>
             <ColorPicker label="Base Color" value={state.color} onChange={(e) => onPropChange('color', e.target.value)} />
             <RangeSlider label="Roughness" motionValue={sliderValues.roughness} onCommit={() => {}} onChange={(v) => onPropChange('roughness', v)} min={0} max={1} step={0.01} />
             <RangeSlider label="Metalness" motionValue={sliderValues.metalness} onCommit={() => {}} onChange={(v) => onPropChange('metalness', v)} min={0} max={1} step={0.01} />

@@ -66,6 +66,7 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
     const composerRef = useRef<EffectComposer | null>(null);
     const modelRef = useRef<THREE.Group | null>(null);
+    const modelWrapperRef = useRef<THREE.Group | null>(null);
     const lightsRef = useRef<THREE.Group | null>(null);
     const gridHelperRef = useRef<THREE.GridHelper | null>(null);
     
@@ -78,12 +79,11 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
     // Animation Refs
     const clockRef = useRef<THREE.Clock | null>(null);
     const mixerRef = useRef<THREE.AnimationMixer | null>(null);
-    const originalGeometriesRef = useRef(new Map<string, THREE.BufferGeometry>());
 
     // --- EXPORT IMPERATIVE HANDLE ---
     useImperativeHandle(ref, () => ({
         exportGLB: () => {
-             const model = modelRef.current;
+             const model = modelWrapperRef.current; // Export the wrapper
              if (model) {
                 const exporter = new GLTFExporter();
                 exporter.parse(model, (gltf) => {
@@ -128,9 +128,10 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
         const pixelationPass = new ShaderPass(PixelationShader); pixelationPass.uniforms['resolution'].value.set(currentMount.clientWidth, currentMount.clientHeight); composer.addPass(pixelationPass); pixelationPassRef.current = pixelationPass;
         const scanLinesPass = new ShaderPass(ScanLineShader); composer.addPass(scanLinesPass); scanLinesPassRef.current = scanLinesPass;
 
-        // Lights & Grid
+        // Lights, Grid, and Model Wrapper
         const lights = new THREE.Group(); lightsRef.current = lights; scene.add(lights);
         const gridHelper = new THREE.GridHelper(200, 50, 0x444444, 0x222222); gridHelperRef.current = gridHelper; scene.add(gridHelper);
+        const modelWrapper = new THREE.Group(); modelWrapperRef.current = modelWrapper; scene.add(modelWrapper);
 
         // Loop
         let frameId: number;
@@ -176,13 +177,12 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
 
     // --- UPDATE GEOMETRY (When SVG Data changes) ---
     useEffect(() => {
-        const scene = sceneRef.current;
         const camera = cameraRef.current;
-        if (!scene || !camera) return;
+        const modelWrapper = modelWrapperRef.current;
+        if (!camera || !modelWrapper) return;
 
         if (modelRef.current) {
-            scene.remove(modelRef.current);
-            // Dispose geometries
+            modelWrapper.remove(modelRef.current);
             modelRef.current.traverse((o) => {
                 if (o instanceof THREE.Mesh) o.geometry.dispose();
             });
@@ -191,7 +191,7 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
         if (state.svgData) {
             const model = createModelFromSVG(state.svgData, state.extrusion, state.bevelSegments, state.color);
             modelRef.current = model;
-            scene.add(model);
+            modelWrapper.add(model);
 
             // Fit Camera
             const box = new THREE.Box3().setFromObject(model);
@@ -241,16 +241,22 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
             }
         }
         
-        // Background
+        // Background & Grid
         if (sceneRef.current) sceneRef.current.background = new THREE.Color(state.backgroundColor);
         if (gridHelperRef.current) gridHelperRef.current.visible = state.isGridVisible;
+
+        // Rotation
+        if (modelWrapperRef.current) {
+            modelWrapperRef.current.rotation.x = THREE.MathUtils.degToRad(state.rotateX);
+            modelWrapperRef.current.rotation.y = THREE.MathUtils.degToRad(state.rotateY);
+        }
 
         // Post Processing toggles
         if (bloomPassRef.current) bloomPassRef.current.enabled = state.isBloomEnabled;
         if (pixelationPassRef.current) pixelationPassRef.current.enabled = state.isPixelationEnabled;
         if (scanLinesPassRef.current) scanLinesPassRef.current.enabled = state.isScanLinesEnabled;
         
-        // Glitch Logic (Simplified re-implementation)
+        // Glitch Logic
         if (rgbShiftPassRef.current) {
             rgbShiftPassRef.current.enabled = state.isGlitchEnabled || state.isChromaticAberrationEnabled;
             if (state.isChromaticAberrationEnabled && !state.isGlitchEnabled) {
@@ -259,7 +265,7 @@ const ShiftStage = forwardRef<ShiftStageRef, ShiftStageProps>(({ state }, ref) =
             }
         }
 
-    }, [state.lightingPreset, state.backgroundColor, state.isGridVisible, state.isBloomEnabled, state.isPixelationEnabled, state.isScanLinesEnabled, state.isGlitchEnabled, state.isChromaticAberrationEnabled]);
+    }, [state.lightingPreset, state.backgroundColor, state.isGridVisible, state.rotateX, state.rotateY, state.isBloomEnabled, state.isPixelationEnabled, state.isScanLinesEnabled, state.isGlitchEnabled, state.isChromaticAberrationEnabled]);
 
     return (
         <div ref={mountRef} style={{ width: '100%', height: '100%', cursor: 'grab' }} onPointerDown={(e) => (e.target as HTMLDivElement).style.cursor = 'grabbing'} onPointerUp={(e) => (e.target as HTMLDivElement).style.cursor = 'grab'} />

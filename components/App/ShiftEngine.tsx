@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useMotionValue, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../Theme.tsx';
 import ThemeToggleButton from '../Core/ThemeToggleButton.tsx';
@@ -31,6 +31,8 @@ const ShiftEngine = () => {
     lightingPreset: 'studio',
     backgroundColor: '#0A0A0A',
     isGridVisible: true,
+    rotateX: 15,
+    rotateY: 45,
     isGlitchEnabled: false,
     isBloomEnabled: false,
     isPixelationEnabled: false,
@@ -47,10 +49,34 @@ const ShiftEngine = () => {
       transmission: useMotionValue(state.transmission),
       ior: useMotionValue(state.ior),
       thickness: useMotionValue(state.thickness),
+      rotateX: useMotionValue(state.rotateX),
+      rotateY: useMotionValue(state.rotateY),
   };
 
   const handlePropChange = (key: string, value: any) => {
     setState(prev => ({ ...prev, [key]: value }));
+    const motionValueKey = key as keyof typeof sliderValues;
+    if (sliderValues[motionValueKey]) {
+        sliderValues[motionValueKey].set(value);
+    }
+  };
+  
+  const handlePresetChange = (preset: 'matte' | 'plastic' | 'metal' | 'glass') => {
+    let newProps: Partial<ShiftState> = {};
+    switch (preset) {
+        case 'matte': newProps = { color: '#cccccc', roughness: 1.0, metalness: 0.0, transmission: 0.0, ior: 1.5, thickness: 1.0 }; break;
+        case 'plastic': newProps = { color: '#ffffff', roughness: 0.1, metalness: 0.1, transmission: 0.0, ior: 1.5, thickness: 1.0 }; break;
+        case 'metal': newProps = { color: '#FFD700', roughness: 0.2, metalness: 1.0, transmission: 0.0, ior: 1.5, thickness: 1.0 }; break;
+        case 'glass': newProps = { color: '#ffffff', roughness: 0.05, metalness: 0.0, transmission: 1.0, ior: 1.5, thickness: 1.5 }; break;
+    }
+    setState(prev => ({ ...prev, ...newProps }));
+    // Update all relevant motion values
+    Object.entries(newProps).forEach(([key, value]) => {
+        const motionValueKey = key as keyof typeof sliderValues;
+        if (sliderValues[motionValueKey] && typeof value === 'number') {
+            sliderValues[motionValueKey].set(value);
+        }
+    });
   };
 
   // --- WINDOWS ---
@@ -136,6 +162,7 @@ const ShiftEngine = () => {
                     state={state} 
                     onPropChange={handlePropChange} 
                     sliderValues={sliderValues}
+                    onPresetChange={handlePresetChange}
                 />
             </FloatingWindow>
         )}

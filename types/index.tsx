@@ -59,6 +59,8 @@ export interface ShiftState {
   lightingPreset: 'studio' | 'dramatic' | 'soft';
   backgroundColor: string;
   isGridVisible: boolean;
+  rotateX: number;
+  rotateY: number;
   
   // Effects
   isGlitchEnabled: boolean;
