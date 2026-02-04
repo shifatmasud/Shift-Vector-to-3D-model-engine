@@ -2,10 +2,11 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
+import React from 'react';
+import ShiftEngine from '../App/ShiftEngine.tsx';
 
-// This component is no longer used. The main App/Shift.tsx is now the entry point.
 const Welcome = () => {
-  return null;
+  return <ShiftEngine />;
 };
 
 export default Welcome;

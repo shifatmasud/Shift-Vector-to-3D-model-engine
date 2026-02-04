@@ -7,14 +7,18 @@ import { motion } from 'framer-motion';
 import { useTheme } from '../../Theme.tsx';
 
 interface ToggleProps {
+  label: string;
   isOn: boolean;
   onToggle: () => void;
 }
 
-const Toggle: React.FC<ToggleProps> = ({ isOn, onToggle }) => {
+const Toggle: React.FC<ToggleProps> = ({ label, isOn, onToggle }) => {
   const { theme } = useTheme();
 
-  const activeColor = theme.Color.Success.Content[1];
+  // Use Signal Content for the active color.
+  // In Light Mode, Signal Surface is pastel, so Content (Strong Purple) gives the correct "On" state.
+  // In Dark Mode, Signal Surface is dark, so Content (Light Purple) gives the correct high-contrast "On" state.
+  const activeColor = theme.Color.Signal.Content[1];
 
   const trackStyle: React.CSSProperties = {
     width: '40px',
@@ -38,16 +42,18 @@ const Toggle: React.FC<ToggleProps> = ({ isOn, onToggle }) => {
   };
 
   return (
-    <div style={trackStyle} onClick={onToggle}>
-      <motion.div
-        style={thumbStyle}
-        // FIX: Cast motion props to `any` to bypass TypeScript errors. This seems to be caused by a type definition issue in the environment.
-        {...{
-          initial: false,
-          animate: { x: isOn ? 16 : 0 },
-          transition: { type: 'spring', stiffness: 700, damping: 30 },
-        } as any}
-      />
+    <div onPointerDown={(e) => e.stopPropagation()} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+      <label style={{ ...theme.Type.Readable.Label.S, color: theme.Color.Base.Content[2] }}>
+        {label}
+      </label>
+      <div style={trackStyle} onClick={onToggle}>
+        <motion.div
+          style={{ ...thumbStyle }}
+          initial={false}
+          animate={{ x: isOn ? 16 : 0 }}
+          transition={{ type: 'spring', stiffness: 700, damping: 30 }}
+        />
+      </div>
     </div>
   );
 };

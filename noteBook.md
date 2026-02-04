@@ -4,9 +4,9 @@ A log of all tasks, ideas, and progress for this project.
 
 ## To Do
 
--   [ ] Add more post-processing effect options.
--   [ ] Implement material saving and loading.
--   [ ] Add environment map options for lighting.
+-   [ ] Integrate Gemini API for a core feature.
+-   [ ] Create a more complex page layout.
+-   [ ] Add interactive 3D elements with Three.js.
 
 ## In Progress
 
@@ -14,7 +14,6 @@ A log of all tasks, ideas, and progress for this project.
 
 ## Done
 
--   **[2024-05-22 10:00]**: Completed major refactor from Meta Prototype to "Shift" SVG-to-3D editor. Modularized all components, redesigned UI to a macOS aesthetic, and implemented core features like geometry/material editing, effects, and GLB export.
 -   **[2024-05-21 13:15]**: Added a toggleable measurement overlay to the Stage, showing real-time dimensions for the button component.
 -   **[2024-05-21 13:00]**: Completed extensive refactor into granular components (new Core inputs, Package panels for each window, Section for Stage).
 -   **[2024-05-21 12:30]**: Refactored MetaPrototype into a modular component structure (App, Package, Section, Core) for better organization and scalability.

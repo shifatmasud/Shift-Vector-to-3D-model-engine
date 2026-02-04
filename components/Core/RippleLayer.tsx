@@ -18,11 +18,13 @@ interface RippleLayerProps {
   width: number;
   height: number;
   opacity?: number;
+  forced?: boolean;
 }
 
 /**
  * 💧 RIPPLE LAYER (Tap / Click Burst)
  * Handles transient burst animations (ripples) for click/tap interactions.
+ * This is fully decoupled from the persistent StateLayer.
  */
 const RippleLayer: React.FC<RippleLayerProps> = ({ 
   color, 
@@ -30,9 +32,11 @@ const RippleLayer: React.FC<RippleLayerProps> = ({
   onRippleComplete,
   width,
   height,
-  opacity = 0.25
+  opacity = 0.25,
+  forced = false
 }) => {
-  const maxDiameter = Math.hypot(width, height) * 2;
+  // Calculate the diameter needed to cover the component from the center or furthest corner.
+  const maxDiameter = Math.hypot(width, height) * 2.5;
 
   const styles: React.CSSProperties = {
     position: 'absolute',
@@ -43,8 +47,25 @@ const RippleLayer: React.FC<RippleLayerProps> = ({
     overflow: 'hidden',
     borderRadius: 'inherit',
     pointerEvents: 'none',
-    zIndex: 0,
+    zIndex: 0, // Sits on top of background but below content
   };
+
+  if (forced) {
+    return (
+        <div style={styles}>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: opacity }}
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: color,
+                    pointerEvents: 'none'
+                }}
+            />
+        </div>
+    );
+  }
 
   return (
     <div style={styles}>
@@ -52,33 +73,32 @@ const RippleLayer: React.FC<RippleLayerProps> = ({
         {ripples.map((ripple) => (
           <motion.div
             key={ripple.id}
-            // FIX: Cast motion props to `any` to bypass TypeScript errors. This seems to be caused by a type definition issue in the environment.
-            {...{
-              initial: {
-                width: 0,
-                height: 0,
-                opacity: opacity * 0.5,
-              },
-              animate: {
-                width: maxDiameter,
-                height: maxDiameter,
-                opacity: 0,
-              },
-              exit: { opacity: 0 },
-              style: {
-                position: 'absolute',
-                top: ripple.y,
-                left: ripple.x,
-                backgroundColor: color,
-                borderRadius: '50%',
-                transform: 'translate(-50%, -50%)',
-              },
-              transition: {
-                duration: 0.8,
-                ease: [0.22, 1, 0.36, 1],
-              },
-              onAnimationComplete: () => onRippleComplete(ripple.id),
-            } as any}
+            initial={{
+              width: 0,
+              height: 0,
+              opacity: 0,
+            }}
+            animate={{
+              width: maxDiameter,
+              height: maxDiameter,
+              opacity: [opacity * 0.5, opacity, 0], // Flash then fade
+              filter: 'blur(8px)', // Soft blur
+            }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'absolute',
+              top: ripple.y,
+              left: ripple.x,
+              backgroundColor: color,
+              borderRadius: '50%',
+              transform: 'translate(-50%, -50%)',
+              pointerEvents: 'none',
+            }}
+            transition={{
+              duration: 2.5, // Ultra-slow liquid ripple
+              ease: [0.2, 0, 0, 1], // Deep ease-out
+            }}
+            onAnimationComplete={() => onRippleComplete(ripple.id)}
           />
         ))}
       </AnimatePresence>
